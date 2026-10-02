@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>HOSA Medical Terminology Quiz</title>
+  <style>
+
+:root {
+  --bg: #0b1220;
+  --bg-card: #132033;
+  --bg-soft: #1e3348;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #2dd4bf;
+  --accent-2: #38bdf8;
+  --accent-deep: #0d9488;
+  --good: #34d399;
+  --good-bg: rgba(52, 211, 153, 0.16);
+  --bad: #f87171;
+  --bad-bg: rgba(248, 113, 113, 0.16);
+  --warn: #fbbf24;
+  --radius: 16px;
+  --shadow: 0 12px 32px rgba(0,0,0,0.4);
+  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; min-height: 100%;
+  background:
+    radial-gradient(1000px 500px at 0% -10%, rgba(13,148,136,0.45) 0%, transparent 55%),
+    radial-gradient(800px 420px at 100% 0%, rgba(14,165,233,0.28) 0%, transparent 50%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.45;
+}
+body { padding: 1rem; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+.app { max-width: 720px; margin: 0 auto; min-height: calc(100vh - 2rem); }
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn 0.22s ease; }
+.screen[hidden] { display: none !important; }
+.screen.active:not([hidden]) { display: block !important; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.hero { text-align: center; padding: 1.25rem 0.4rem 0.75rem; }
+.eyebrow {
+  color: var(--accent); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: 0.72rem; font-weight: 700; margin: 0 0 0.45rem;
+}
+h1 { font-size: clamp(1.65rem, 5vw, 2.25rem); margin: 0 0 0.45rem; line-height: 1.15; }
+.subtitle { color: var(--muted); margin: 0 auto; max-width: 34rem; font-size: 1.02rem; }
+.mastery-card {
+  margin: 1rem 0 1.25rem; padding: 1rem 1.15rem;
+  background: rgba(19, 32, 51, 0.9);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.mastery-top {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+}
+.mastery-label { font-weight: 700; font-size: 0.95rem; }
+.mastery-tier { color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+.meter {
+  margin-top: 0.65rem; height: 10px; background: var(--bg-soft);
+  border-radius: 999px; overflow: hidden;
+}
+.meter > span {
+  display: block; height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-2));
+  border-radius: inherit; transition: width 0.35s ease;
+}
+.mastery-stats {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
+  margin-top: 0.7rem; color: var(--muted); font-size: 0.85rem;
+}
+.mode-grid { display: grid; gap: 0.85rem; padding: 0.25rem 0 1rem; }
+.mode-card {
+  display: flex; align-items: center; gap: 1rem; width: 100%; text-align: left;
+  padding: 1.05rem 1.2rem; min-height: 76px;
+  border: 1px solid rgba(148,163,184,0.28);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(19,32,51,0.98), rgba(30,51,72,0.75));
+  color: var(--text); box-shadow: var(--shadow);
+  cursor: pointer; font: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.mode-card:hover, .mode-card:focus-visible {
+  transform: translateY(-2px); border-color: var(--accent); outline: none;
+}
+.mode-icon {
+  flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 1.45rem;
+  background: rgba(45, 212, 191, 0.15);
+}
+.mode-card h2 { margin: 0; font-size: 1.08rem; }
+.mode-card p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.88rem; }
+.home-actions { display: grid; gap: 0.55rem; padding-bottom: 1.5rem; }
+.opt-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.75rem 1rem; border-radius: 12px;
+  background: rgba(19,32,51,0.7); border: 1px solid rgba(148,163,184,0.2);
+  color: var(--muted); font-size: 0.92rem;
+}
+.opt-row label { display: flex; align-items: center; gap: 0.55rem; cursor: pointer; color: var(--text); }
+.quiz-bar {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  margin-bottom: 1rem; padding-top: 0.2rem;
+}
+.progress-wrap { flex: 1; }
+.progress-meta {
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.35rem;
+  color: var(--muted); font-size: 0.88rem; font-weight: 600; margin-bottom: 0.35rem;
+}
+.progress-track {
+  height: 8px; background: var(--bg-soft); border-radius: 999px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent-deep), var(--accent-2));
+  border-radius: inherit; transition: width 0.25s ease;
+}
+.timer-chip { font-variant-numeric: tabular-nums; color: var(--warn); font-weight: 700; }
+.quiz-body {
+  background: rgba(19, 32, 51, 0.9);
+  border: 1px solid rgba(148,163,184,0.22);
+  border-radius: calc(var(--radius) + 4px);
+  padding: 1.2rem; box-shadow: var(--shadow);
+}
+.chip {
+  display: inline-block; margin: 0 0.35rem 0.75rem 0;
+  padding: 0.22rem 0.65rem; border-radius: 999px;
+  background: rgba(45, 212, 191, 0.18); color: #99f6e4;
+  font-size: 0.78rem; font-weight: 650;
+}
+.chip.tier { background: rgba(56, 189, 248, 0.18); color: #bae6fd; }
+.prompt {
+  margin: 0 0 1.15rem; font-size: clamp(1.12rem, 3.4vw, 1.35rem);
+  line-height: 1.35; font-weight: 650;
+}
+.choices { display: grid; gap: 0.7rem; }
+.choice {
+  display: flex; align-items: flex-start; gap: 0.8rem; width: 100%; text-align: left;
+  padding: 0.95rem 1rem; min-height: 60px; border-radius: 14px;
+  border: 2px solid rgba(148,163,184,0.35);
+  background: rgba(11, 18, 32, 0.55); color: var(--text);
+  font: inherit; font-size: 1.02rem; cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.choice:hover:not(:disabled), .choice:focus-visible:not(:disabled) {
+  border-color: var(--accent); outline: none; transform: translateY(-1px);
+}
+.choice:disabled { cursor: default; }
+.choice .letter {
+  flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 8px;
+  display: grid; place-items: center; font-weight: 700;
+  background: var(--bg-soft); color: var(--accent);
+}
+.choice .choice-text { flex: 1; padding-top: 0.12rem; }
+.choice.correct { border-color: var(--good); background: var(--good-bg); }
+.choice.correct .letter { background: rgba(52,211,153,0.25); color: var(--good); }
+.choice.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+.choice.incorrect .letter { background: rgba(248,113,113,0.25); color: var(--bad); }
+.choice.dimmed { opacity: 0.5; }
+.feedback {
+  margin-top: 1rem; padding: 0.95rem 1.05rem; border-radius: 12px; font-size: 0.98rem;
+}
+.feedback.good { background: var(--good-bg); border: 1px solid rgba(52,211,153,0.4); color: #bbf7d0; }
+.feedback.bad { background: var(--bad-bg); border: 1px solid rgba(248,113,113,0.4); color: #fecaca; }
+.feedback strong { display: block; margin-bottom: 0.3rem; font-size: 1.02rem; }
+.btn-primary, .btn-secondary, .btn-text {
+  font: inherit; cursor: pointer; border-radius: 12px; border: none;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+.btn-primary {
+  display: block; width: 100%; margin-top: 0.85rem;
+  padding: 0.92rem 1.2rem; min-height: 52px;
+  background: linear-gradient(135deg, #0d9488, #0284c7);
+  color: white; font-weight: 700; font-size: 1.05rem;
+}
+.btn-secondary {
+  display: block; width: 100%; margin-top: 0.65rem;
+  padding: 0.92rem 1.2rem; min-height: 52px;
+  background: var(--bg-soft); color: var(--text); font-weight: 650; font-size: 1.02rem;
+  border: 1px solid rgba(148,163,184,0.35);
+}
+.btn-text {
+  background: transparent; color: var(--muted); padding: 0.35rem 0.45rem; font-weight: 600;
+}
+.btn-primary:hover, .btn-secondary:hover, .btn-text:hover { opacity: 0.93; transform: translateY(-1px); }
+.btn-danger-text { color: #fca5a5; }
+.nav-row { display: flex; gap: 0.7rem; margin-top: 1rem; }
+.nav-row .btn-primary, .nav-row .btn-secondary { margin-top: 0; flex: 1; }
+.results-actions { max-width: 420px; margin: 0 auto; padding: 0.4rem 0 2rem; }
+.score-big {
+  font-size: clamp(2.4rem, 10vw, 3.4rem); font-weight: 800;
+  margin: 0.65rem 0; color: var(--accent);
+}
+.score-denom { font-size: 0.5em; color: var(--muted); font-weight: 600; }
+.review-box {
+  text-align: left; margin: 1rem auto 0.5rem; max-width: 420px;
+  padding: 1rem 1.1rem; border-radius: 14px;
+  background: rgba(19,32,51,0.85); border: 1px solid rgba(148,163,184,0.25);
+}
+.review-box h3 { margin: 0 0 0.5rem; font-size: 0.95rem; color: var(--accent); }
+.review-box ul { margin: 0; padding-left: 1.15rem; color: var(--muted); font-size: 0.92rem; }
+.review-box li { margin: 0.25rem 0; }
+.tier-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 0.75rem 0; }
+.tier-pill {
+  padding: 0.3rem 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 650;
+  background: rgba(30,51,72,0.9); border: 1px solid rgba(148,163,184,0.3); color: var(--muted);
+}
+.tier-pill.open { border-color: rgba(45,212,191,0.55); color: #99f6e4; }
+.tier-pill.current { background: rgba(45,212,191,0.2); color: var(--accent); border-color: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+  </style>
+</head>
+<body>
+
+  <div id="app" class="app">
+    <section id="screen-home" class="screen active" aria-label="Home">
+      <header class="hero">
+        <p class="eyebrow">HOSA · 8th Grade Prep</p>
+        <h1>HOSA Medical Terminology</h1>
+        <p class="subtitle">Learn word parts, unlock harder questions as you improve, and build HOSA-ready vocab — offline and adaptive.</p>
+      </header>
+
+      <div class="mastery-card" id="home-mastery">
+        <div class="mastery-top">
+          <span class="mastery-label">Your mastery</span>
+          <span class="mastery-tier" id="home-tier-label">Level 1 · Foundations</span>
+        </div>
+        <div class="meter" aria-hidden="true"><span id="home-meter"></span></div>
+        <div class="mastery-stats" id="home-stats"></div>
+        <div class="tier-pills" id="home-tier-pills"></div>
+      </div>
+
+      <div class="mode-grid" role="list">
+        <button type="button" class="mode-card" id="btn-practice" role="listitem">
+          <span class="mode-icon" aria-hidden="true">🧠</span>
+          <span>
+            <h2>Start Practice</h2>
+            <p>Adaptive mix — grows harder as you master each level</p>
+          </span>
+        </button>
+        <button type="button" class="mode-card" id="btn-focus" role="listitem">
+          <span class="mode-icon" aria-hidden="true">🎯</span>
+          <span>
+            <h2>Focus Weak Spots</h2>
+            <p>Drill tags and terms you've missed most</p>
+          </span>
+        </button>
+        <button type="button" class="mode-card" id="btn-challenge" role="listitem">
+          <span class="mode-icon" aria-hidden="true">⏱️</span>
+          <span>
+            <h2>Challenge Quiz</h2>
+            <p>Harder mix · optional timer for HOSA-style pace</p>
+          </span>
+        </button>
+      </div>
+
+      <div class="home-actions">
+        <div class="opt-row">
+          <label><input type="checkbox" id="opt-timer" /> Timed challenge (60s / question)</label>
+          <span id="bank-count"></span>
+        </div>
+        <button type="button" class="btn-text btn-danger-text" id="btn-reset">Reset Progress</button>
+      </div>
+    </section>
+
+    <section id="screen-quiz" class="screen" aria-label="Quiz" hidden>
+      <header class="quiz-bar">
+        <button type="button" id="btn-quit" class="btn-text" aria-label="Quit to home">← Home</button>
+        <div class="progress-wrap">
+          <div class="progress-meta">
+            <span id="progress-label">1 of 12</span>
+            <span id="score-label">Score: 0</span>
+            <span id="timer-label" class="timer-chip" hidden></span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+        </div>
+      </header>
+      <div class="quiz-body">
+        <div>
+          <span id="tag-chip" class="chip"></span>
+          <span id="tier-chip" class="chip tier"></span>
+        </div>
+        <h2 id="question-prompt" class="prompt"></h2>
+        <div id="choices" class="choices" role="group" aria-label="Answer choices"></div>
+        <div id="feedback" class="feedback" hidden role="status"></div>
+        <div class="nav-row">
+          <button type="button" id="btn-home-mid" class="btn-secondary">Home</button>
+          <button type="button" id="btn-next" class="btn-primary" hidden>Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-results" class="screen" aria-label="Results" hidden>
+      <header class="hero">
+        <p class="eyebrow" id="results-mode">Practice</p>
+        <h1 id="results-headline">Nice work!</h1>
+        <p class="score-big"><span id="results-score">0</span><span class="score-denom"> / <span id="results-total">12</span></span></p>
+        <p id="results-message" class="subtitle"></p>
+        <div class="tier-pills" id="results-tier-pills"></div>
+      </header>
+      <div class="mastery-card" style="max-width:420px;margin-left:auto;margin-right:auto;">
+        <div class="mastery-top">
+          <span class="mastery-label">Level progress</span>
+          <span class="mastery-tier" id="results-tier-label"></span>
+        </div>
+        <div class="meter"><span id="results-meter"></span></div>
+        <div class="mastery-stats" id="results-stats"></div>
+      </div>
+      <div class="review-box" id="review-box" hidden>
+        <h3>Review these word-part areas</h3>
+        <ul id="review-list"></ul>
+      </div>
+      <div class="results-actions">
+        <button type="button" class="btn-primary" id="btn-again">Play again</button>
+        <button type="button" class="btn-secondary" id="btn-results-home">Back to home</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+window.HOSA_BANK = [{"id": "q001", "tier": 1, "tags": ["prefix", "hyper"], "prompt": "The prefix \"hyper-\" means:", "choices": {"A": "below normal", "B": "above / excessive", "C": "around", "D": "within"}, "correct": "B", "explain": "hyper- = above or excessive (think: hyperactive = overly active)."}, {"id": "q002", "tier": 1, "tags": ["prefix", "hypo"], "prompt": "The prefix \"hypo-\" means:", "choices": {"A": "above normal", "B": "against", "C": "below / under", "D": "many"}, "correct": "C", "explain": "hypo- = below or under (hypothermia = body temp below normal)."}, {"id": "q003", "tier": 1, "tags": ["prefix", "brady"], "prompt": "The prefix \"brady-\" means:", "choices": {"A": "fast", "B": "slow", "C": "half", "D": "new"}, "correct": "B", "explain": "brady- = slow (bradycardia = slow heart rate)."}, {"id": "q004", "tier": 1, "tags": ["prefix", "tachy"], "prompt": "The prefix \"tachy-\" means:", "choices": {"A": "slow", "B": "painful", "C": "fast / rapid", "D": "without"}, "correct": "C", "explain": "tachy- = fast (tachycardia = fast heart rate)."}, {"id": "q005", "tier": 1, "tags": ["prefix", "a-an"], "prompt": "The prefixes \"a-\" and \"an-\" mean:", "choices": {"A": "against", "B": "before", "C": "without / not", "D": "after"}, "correct": "C", "explain": "a-/an- = without or not (anemia = without enough healthy red blood cells)."}, {"id": "q006", "tier": 1, "tags": ["prefix", "anti"], "prompt": "The prefix \"anti-\" means:", "choices": {"A": "before", "B": "against", "C": "within", "D": "around"}, "correct": "B", "explain": "anti- = against (antibiotic = against bacteria)."}, {"id": "q007", "tier": 1, "tags": ["prefix", "peri"], "prompt": "The prefix \"peri-\" means:", "choices": {"A": "inside", "B": "above", "C": "around / surrounding", "D": "between"}, "correct": "C", "explain": "peri- = around (pericardium = membrane around the heart)."}, {"id": "q008", "tier": 1, "tags": ["prefix", "endo"], "prompt": "The prefix \"endo-\" means:", "choices": {"A": "outside", "B": "within / inside", "C": "across", "D": "below"}, "correct": "B", "explain": "endo- = within or inside (endoscope = instrument to look inside)."}, {"id": "q009", "tier": 1, "tags": ["prefix", "epi"], "prompt": "The prefix \"epi-\" means:", "choices": {"A": "under", "B": "upon / on / over", "C": "half", "D": "many"}, "correct": "B", "explain": "epi- = upon or over (epidermis = outer layer of skin)."}, {"id": "q010", "tier": 1, "tags": ["prefix", "sub"], "prompt": "The prefix \"sub-\" means:", "choices": {"A": "above", "B": "across", "C": "under / below", "D": "same"}, "correct": "C", "explain": "sub- = under (subcutaneous = under the skin)."}, {"id": "q011", "tier": 1, "tags": ["prefix", "supra"], "prompt": "The prefix \"supra-\" means:", "choices": {"A": "below", "B": "within", "C": "above / over", "D": "around"}, "correct": "C", "explain": "supra- = above (suprapubic = above the pubic bone)."}, {"id": "q012", "tier": 1, "tags": ["prefix", "inter"], "prompt": "The prefix \"inter-\" means:", "choices": {"A": "within", "B": "between", "C": "against", "D": "after"}, "correct": "B", "explain": "inter- = between (intercostal = between the ribs)."}, {"id": "q013", "tier": 1, "tags": ["prefix", "intra"], "prompt": "The prefix \"intra-\" means:", "choices": {"A": "between", "B": "outside", "C": "within / inside", "D": "around"}, "correct": "C", "explain": "intra- = within (intravenous = within a vein)."}, {"id": "q014", "tier": 1, "tags": ["prefix", "dys"], "prompt": "The prefix \"dys-\" means:", "choices": {"A": "good / normal", "B": "bad / difficult / painful", "C": "many", "D": "half"}, "correct": "B", "explain": "dys- = bad, difficult, or painful (dyspnea = difficult breathing)."}, {"id": "q015", "tier": 1, "tags": ["prefix", "poly"], "prompt": "The prefix \"poly-\" means:", "choices": {"A": "one", "B": "half", "C": "many / much", "D": "none"}, "correct": "C", "explain": "poly- = many (polyuria = much urine / frequent urination)."}, {"id": "q016", "tier": 1, "tags": ["prefix", "hemi"], "prompt": "The prefix \"hemi-\" means:", "choices": {"A": "whole", "B": "half", "C": "double", "D": "none"}, "correct": "B", "explain": "hemi- = half (hemiplegia = paralysis of one half of the body)."}, {"id": "q017", "tier": 1, "tags": ["prefix", "pre"], "prompt": "The prefix \"pre-\" means:", "choices": {"A": "after", "B": "against", "C": "before", "D": "around"}, "correct": "C", "explain": "pre- = before (prenatal = before birth)."}, {"id": "q018", "tier": 1, "tags": ["prefix", "post"], "prompt": "The prefix \"post-\" means:", "choices": {"A": "before", "B": "after", "C": "against", "D": "within"}, "correct": "B", "explain": "post- = after (postoperative = after surgery)."}, {"id": "q019", "tier": 1, "tags": ["prefix", "trans"], "prompt": "The prefix \"trans-\" means:", "choices": {"A": "under", "B": "across / through", "C": "same", "D": "new"}, "correct": "B", "explain": "trans- = across or through (transfusion = pouring blood across into a patient)."}, {"id": "q020", "tier": 1, "tags": ["prefix", "micro"], "prompt": "The prefix \"micro-\" means:", "choices": {"A": "large", "B": "equal", "C": "small", "D": "fast"}, "correct": "C", "explain": "micro- = small (microscope = instrument to see small things)."}, {"id": "q021", "tier": 1, "tags": ["suffix", "itis"], "prompt": "The suffix \"-itis\" means:", "choices": {"A": "study of", "B": "inflammation", "C": "tumor", "D": "removal"}, "correct": "B", "explain": "-itis = inflammation (tonsillitis = inflamed tonsils)."}, {"id": "q022", "tier": 1, "tags": ["suffix", "ectomy"], "prompt": "The suffix \"-ectomy\" means:", "choices": {"A": "cutting into", "B": "surgical removal", "C": "repair", "D": "viewing"}, "correct": "B", "explain": "-ectomy = surgical removal (appendectomy = removal of the appendix)."}, {"id": "q023", "tier": 1, "tags": ["suffix", "ology"], "prompt": "The suffix \"-ology\" means:", "choices": {"A": "disease", "B": "pain", "C": "study of", "D": "blood condition"}, "correct": "C", "explain": "-ology = study of (cardiology = study of the heart)."}, {"id": "q024", "tier": 1, "tags": ["suffix", "oma"], "prompt": "The suffix \"-oma\" usually means:", "choices": {"A": "infection", "B": "tumor / mass", "C": "fracture", "D": "swelling of fluid"}, "correct": "B", "explain": "-oma = tumor or mass (melanoma = tumor of melanin-producing cells)."}, {"id": "q025", "tier": 1, "tags": ["suffix", "osis"], "prompt": "The suffix \"-osis\" means:", "choices": {"A": "surgical repair", "B": "abnormal condition", "C": "recording", "D": "softening"}, "correct": "B", "explain": "-osis = abnormal condition (osteoporosis = abnormal bone condition — porous bones)."}, {"id": "q026", "tier": 1, "tags": ["suffix", "pathy"], "prompt": "The suffix \"-pathy\" means:", "choices": {"A": "disease", "B": "pain", "C": "blood", "D": "cell"}, "correct": "A", "explain": "-pathy = disease (neuropathy = disease of the nerves)."}, {"id": "q027", "tier": 1, "tags": ["suffix", "algia"], "prompt": "The suffix \"-algia\" means:", "choices": {"A": "swelling", "B": "pain", "C": "fear", "D": "flow"}, "correct": "B", "explain": "-algia = pain (neuralgia = nerve pain)."}, {"id": "q028", "tier": 1, "tags": ["suffix", "emia"], "prompt": "The suffix \"-emia\" means:", "choices": {"A": "urine condition", "B": "blood condition", "C": "breathing", "D": "speech"}, "correct": "B", "explain": "-emia = blood condition (leukemia = white blood cell condition / cancer)."}, {"id": "q029", "tier": 1, "tags": ["suffix", "scopy"], "prompt": "The suffix \"-scopy\" means:", "choices": {"A": "surgical removal", "B": "process of viewing", "C": "recording", "D": "measuring"}, "correct": "B", "explain": "-scopy = process of viewing (colonoscopy = viewing the colon)."}, {"id": "q030", "tier": 1, "tags": ["suffix", "plasty"], "prompt": "The suffix \"-plasty\" means:", "choices": {"A": "destruction", "B": "surgical repair / reshaping", "C": "puncture", "D": "binding"}, "correct": "B", "explain": "-plasty = surgical repair (rhinoplasty = surgical repair of the nose)."}, {"id": "q031", "tier": 1, "tags": ["suffix", "gram"], "prompt": "The suffix \"-gram\" means:", "choices": {"A": "instrument that records", "B": "record / image", "C": "process of recording", "D": "cutting"}, "correct": "B", "explain": "-gram = a record or image (electrocardiogram / ECG = heart electrical record)."}, {"id": "q032", "tier": 1, "tags": ["suffix", "graph"], "prompt": "The suffix \"-graph\" means:", "choices": {"A": "the record itself", "B": "instrument used to record", "C": "inflammation", "D": "tumor"}, "correct": "B", "explain": "-graph = instrument that records (electrocardiograph = machine that makes an ECG)."}, {"id": "q033", "tier": 1, "tags": ["suffix", "graphy"], "prompt": "The suffix \"-graphy\" means:", "choices": {"A": "the image", "B": "the machine", "C": "process of recording", "D": "removal"}, "correct": "C", "explain": "-graphy = process of recording (mammography = process of recording breast images)."}, {"id": "q034", "tier": 1, "tags": ["suffix", "megaly"], "prompt": "The suffix \"-megaly\" means:", "choices": {"A": "softening", "B": "enlargement", "C": "hardening", "D": "narrowing"}, "correct": "B", "explain": "-megaly = enlargement (hepatomegaly = enlarged liver)."}, {"id": "q035", "tier": 1, "tags": ["suffix", "cyte"], "prompt": "The suffix \"-cyte\" means:", "choices": {"A": "cell", "B": "tissue", "C": "organ", "D": "fluid"}, "correct": "A", "explain": "-cyte = cell (erythrocyte = red blood cell)."}, {"id": "q036", "tier": 1, "tags": ["suffix", "phobia"], "prompt": "The suffix \"-phobia\" means:", "choices": {"A": "love of", "B": "fear of", "C": "study of", "D": "pain of"}, "correct": "B", "explain": "-phobia = fear (hydrophobia = fear of water)."}, {"id": "q037", "tier": 1, "tags": ["suffix", "rrhea"], "prompt": "The suffix \"-rrhea\" means:", "choices": {"A": "bursting forth of blood", "B": "flow / discharge", "C": "rupture", "D": "suture"}, "correct": "B", "explain": "-rrhea = flow or discharge (diarrhea = flow through)."}, {"id": "q038", "tier": 1, "tags": ["suffix", "otomy"], "prompt": "The suffix \"-otomy\" (or -tomy) means:", "choices": {"A": "complete removal", "B": "cutting into / incision", "C": "binding", "D": "puncture to withdraw fluid"}, "correct": "B", "explain": "-otomy = cutting into (tracheotomy = cutting into the trachea)."}, {"id": "q039", "tier": 1, "tags": ["suffix", "ostomy"], "prompt": "The suffix \"-ostomy\" means:", "choices": {"A": "surgical creation of an opening", "B": "removal", "C": "repair", "D": "viewing"}, "correct": "A", "explain": "-ostomy = surgically creating an opening (colostomy = opening into the colon)."}, {"id": "q040", "tier": 1, "tags": ["suffix", "ologist"], "prompt": "The suffix \"-ologist\" means:", "choices": {"A": "instrument", "B": "specialist who studies", "C": "disease", "D": "hospital"}, "correct": "B", "explain": "-ologist = specialist (dermatologist = skin specialist)."}, {"id": "q041", "tier": 1, "tags": ["root", "cardio"], "prompt": "The root \"cardi/o\" refers to the:", "choices": {"A": "liver", "B": "heart", "C": "kidney", "D": "lung"}, "correct": "B", "explain": "cardi/o = heart (cardiology = study of the heart)."}, {"id": "q042", "tier": 1, "tags": ["root", "neuro"], "prompt": "The root \"neur/o\" refers to:", "choices": {"A": "muscle", "B": "nerve", "C": "bone", "D": "skin"}, "correct": "B", "explain": "neur/o = nerve (neurology = study of the nervous system)."}, {"id": "q043", "tier": 1, "tags": ["root", "gastro"], "prompt": "The root \"gastr/o\" refers to the:", "choices": {"A": "stomach", "B": "intestine", "C": "gallbladder", "D": "pancreas"}, "correct": "A", "explain": "gastr/o = stomach (gastritis = stomach inflammation)."}, {"id": "q044", "tier": 1, "tags": ["root", "hepato"], "prompt": "The root \"hepat/o\" refers to the:", "choices": {"A": "kidney", "B": "liver", "C": "spleen", "D": "heart"}, "correct": "B", "explain": "hepat/o = liver (hepatitis = liver inflammation)."}, {"id": "q045", "tier": 1, "tags": ["root", "nephro"], "prompt": "The root \"nephr/o\" refers to the:", "choices": {"A": "liver", "B": "bladder", "C": "kidney", "D": "ureter"}, "correct": "C", "explain": "nephr/o = kidney (nephrology = study of the kidneys)."}, {"id": "q046", "tier": 1, "tags": ["root", "derm"], "prompt": "The roots \"derm/o\" and \"dermat/o\" refer to:", "choices": {"A": "fat", "B": "skin", "C": "hair", "D": "nail"}, "correct": "B", "explain": "derm/o, dermat/o = skin (dermatology = study of the skin)."}, {"id": "q047", "tier": 1, "tags": ["root", "osteo"], "prompt": "The root \"oste/o\" refers to:", "choices": {"A": "muscle", "B": "joint", "C": "bone", "D": "cartilage"}, "correct": "C", "explain": "oste/o = bone (osteoporosis = porous bone condition)."}, {"id": "q048", "tier": 1, "tags": ["root", "myo"], "prompt": "The root \"my/o\" refers to:", "choices": {"A": "bone", "B": "muscle", "C": "nerve", "D": "blood"}, "correct": "B", "explain": "my/o = muscle (myalgia = muscle pain)."}, {"id": "q049", "tier": 1, "tags": ["root", "arterio"], "prompt": "The root \"arteri/o\" refers to:", "choices": {"A": "vein", "B": "artery", "C": "capillary", "D": "lymph"}, "correct": "B", "explain": "arteri/o = artery (arteriosclerosis = hardening of arteries)."}, {"id": "q050", "tier": 1, "tags": ["root", "phleb"], "prompt": "The roots \"phleb/o\" and \"ven/o\" refer to:", "choices": {"A": "artery", "B": "vein", "C": "heart", "D": "blood"}, "correct": "B", "explain": "phleb/o, ven/o = vein (phlebotomy = cutting into a vein to draw blood)."}, {"id": "q051", "tier": 1, "tags": ["root", "pneumo"], "prompt": "The roots \"pneum/o\" and \"pulmon/o\" refer to:", "choices": {"A": "heart", "B": "lung / air", "C": "brain", "D": "stomach"}, "correct": "B", "explain": "pneum/o, pulmon/o = lung or air (pneumonia = lung infection)."}, {"id": "q052", "tier": 1, "tags": ["root", "hemo"], "prompt": "The roots \"hem/o\" and \"hemat/o\" refer to:", "choices": {"A": "water", "B": "blood", "C": "urine", "D": "bile"}, "correct": "B", "explain": "hem/o, hemat/o = blood (hematology = study of blood)."}, {"id": "q053", "tier": 1, "tags": ["root", "cyto"], "prompt": "The root \"cyt/o\" refers to a:", "choices": {"A": "cell", "B": "tissue", "C": "organ", "D": "gland"}, "correct": "A", "explain": "cyt/o = cell (cytology = study of cells)."}, {"id": "q054", "tier": 1, "tags": ["root", "arthro"], "prompt": "The root \"arthr/o\" refers to a:", "choices": {"A": "bone", "B": "joint", "C": "muscle", "D": "tendon"}, "correct": "B", "explain": "arthr/o = joint (arthritis = joint inflammation)."}, {"id": "q055", "tier": 1, "tags": ["root", "encephalo"], "prompt": "The root \"encephal/o\" refers to the:", "choices": {"A": "spinal cord", "B": "brain", "C": "skull", "D": "nerve"}, "correct": "B", "explain": "encephal/o = brain (encephalitis = brain inflammation)."}, {"id": "q056", "tier": 1, "tags": ["root", "rhin"], "prompt": "The root \"rhin/o\" refers to the:", "choices": {"A": "ear", "B": "throat", "C": "nose", "D": "eye"}, "correct": "C", "explain": "rhin/o = nose (rhinitis = nose inflammation / runny nose)."}, {"id": "q057", "tier": 1, "tags": ["root", "ot"], "prompt": "The root \"ot/o\" refers to the:", "choices": {"A": "eye", "B": "ear", "C": "mouth", "D": "nose"}, "correct": "B", "explain": "ot/o = ear (otoscope = instrument to look in the ear)."}, {"id": "q058", "tier": 1, "tags": ["root", "ophthalm"], "prompt": "The root \"ophthalm/o\" refers to the:", "choices": {"A": "ear", "B": "eye", "C": "tooth", "D": "tongue"}, "correct": "B", "explain": "ophthalm/o = eye (ophthalmologist = eye doctor)."}, {"id": "q059", "tier": 1, "tags": ["root", "cyst"], "prompt": "The root \"cyst/o\" often refers to the:", "choices": {"A": "kidney", "B": "urinary bladder", "C": "gallbladder only", "D": "stomach"}, "correct": "B", "explain": "cyst/o = urinary bladder (or a fluid-filled sac). Cystitis = bladder inflammation."}, {"id": "q060", "tier": 1, "tags": ["root", "colo"], "prompt": "The root \"col/o\" or \"colon/o\" refers to the:", "choices": {"A": "small intestine", "B": "large intestine / colon", "C": "stomach", "D": "rectum only"}, "correct": "B", "explain": "col/o, colon/o = colon (colonoscopy = viewing the colon)."}, {"id": "q061", "tier": 1, "tags": ["body", "systems"], "prompt": "Which organ pumps blood through the body?", "choices": {"A": "Liver", "B": "Lungs", "C": "Heart", "D": "Kidneys"}, "correct": "C", "explain": "The heart is the muscular pump of the circulatory system."}, {"id": "q062", "tier": 1, "tags": ["body", "systems"], "prompt": "Which organs exchange oxygen and carbon dioxide?", "choices": {"A": "Kidneys", "B": "Lungs", "C": "Stomach", "D": "Skin"}, "correct": "B", "explain": "The lungs handle gas exchange — oxygen in, carbon dioxide out."}, {"id": "q063", "tier": 1, "tags": ["body", "systems"], "prompt": "Which organs filter blood and make urine?", "choices": {"A": "Lungs", "B": "Liver", "C": "Kidneys", "D": "Pancreas"}, "correct": "C", "explain": "The kidneys filter waste from blood to form urine."}, {"id": "q064", "tier": 1, "tags": ["body", "anatomical"], "prompt": "Anterior means:", "choices": {"A": "toward the back", "B": "toward the front", "C": "toward the side", "D": "toward the feet"}, "correct": "B", "explain": "Anterior = front. Posterior = back."}, {"id": "q065", "tier": 1, "tags": ["body", "anatomical"], "prompt": "Superior means:", "choices": {"A": "below", "B": "above / toward the head", "C": "closer to midline", "D": "farther from trunk"}, "correct": "B", "explain": "Superior = above. Inferior = below."}, {"id": "q066", "tier": 2, "tags": ["term", "cardio"], "prompt": "Bradycardia means:", "choices": {"A": "fast heart rate", "B": "slow heart rate", "C": "irregular heartbeat", "D": "enlarged heart"}, "correct": "B", "explain": "brady- (slow) + cardi (heart) + -ia (condition) = slow heart rate."}, {"id": "q067", "tier": 2, "tags": ["term", "cardio"], "prompt": "Tachycardia means:", "choices": {"A": "slow heart rate", "B": "stopped heart", "C": "fast heart rate", "D": "weak pulse"}, "correct": "C", "explain": "tachy- (fast) + cardi (heart) = fast heart rate."}, {"id": "q068", "tier": 2, "tags": ["term", "cardio"], "prompt": "Myocarditis is inflammation of the:", "choices": {"A": "heart muscle", "B": "heart valves", "C": "outer heart sac", "D": "blood vessels"}, "correct": "A", "explain": "my/o (muscle) + cardi (heart) + -itis (inflammation) = heart muscle inflammation."}, {"id": "q069", "tier": 2, "tags": ["term", "cardio"], "prompt": "A cardiologist is a doctor who specializes in the:", "choices": {"A": "lungs", "B": "heart", "C": "brain", "D": "bones"}, "correct": "B", "explain": "cardi/o + -ologist = heart specialist."}, {"id": "q070", "tier": 2, "tags": ["term", "neuro"], "prompt": "Neuralgia means:", "choices": {"A": "nerve tumor", "B": "nerve pain", "C": "nerve removal", "D": "study of nerves"}, "correct": "B", "explain": "neur (nerve) + -algia (pain) = nerve pain."}, {"id": "q071", "tier": 2, "tags": ["term", "neuro"], "prompt": "Neuropathy is a:", "choices": {"A": "nerve disease / disorder", "B": "brain surgery", "C": "muscle spasm", "D": "skin rash"}, "correct": "A", "explain": "neur/o + -pathy (disease) = disease of the nerves."}, {"id": "q072", "tier": 2, "tags": ["term", "gastro"], "prompt": "Gastritis is:", "choices": {"A": "stomach removal", "B": "stomach inflammation", "C": "intestinal blockage", "D": "liver disease"}, "correct": "B", "explain": "gastr (stomach) + -itis = stomach inflammation."}, {"id": "q073", "tier": 2, "tags": ["term", "gastro"], "prompt": "A gastrectomy is:", "choices": {"A": "viewing the stomach", "B": "surgical removal of (part of) the stomach", "C": "stomach X-ray", "D": "stomach pain"}, "correct": "B", "explain": "gastr + -ectomy = surgical removal of the stomach (or part of it)."}, {"id": "q074", "tier": 2, "tags": ["term", "hepato"], "prompt": "Hepatitis means:", "choices": {"A": "kidney infection", "B": "liver inflammation", "C": "gallbladder stones", "D": "pancreas failure"}, "correct": "B", "explain": "hepat (liver) + -itis = liver inflammation."}, {"id": "q075", "tier": 2, "tags": ["term", "hepato"], "prompt": "Hepatomegaly means:", "choices": {"A": "small liver", "B": "liver tumor", "C": "enlarged liver", "D": "liver removal"}, "correct": "C", "explain": "hepat/o + -megaly (enlargement) = enlarged liver."}, {"id": "q076", "tier": 2, "tags": ["term", "nephro"], "prompt": "Nephritis is inflammation of the:", "choices": {"A": "bladder", "B": "kidney", "C": "liver", "D": "ureter only"}, "correct": "B", "explain": "nephr (kidney) + -itis = kidney inflammation."}, {"id": "q077", "tier": 2, "tags": ["term", "derm"], "prompt": "Dermatitis is:", "choices": {"A": "skin cancer", "B": "skin inflammation", "C": "hair loss", "D": "nail fungus"}, "correct": "B", "explain": "dermat + -itis = skin inflammation."}, {"id": "q078", "tier": 2, "tags": ["term", "osteo"], "prompt": "Osteoarthritis involves:", "choices": {"A": "bone and joint inflammation", "B": "muscle tearing", "C": "nerve damage", "D": "blood clots"}, "correct": "A", "explain": "oste/o (bone) + arthr (joint) + -itis = inflammation of bone/joint."}, {"id": "q079", "tier": 2, "tags": ["term", "myo"], "prompt": "Myalgia means:", "choices": {"A": "muscle growth", "B": "muscle pain", "C": "muscle removal", "D": "muscle weakness only"}, "correct": "B", "explain": "my (muscle) + -algia (pain) = muscle pain."}, {"id": "q080", "tier": 2, "tags": ["term", "pneumo"], "prompt": "Pneumonia is an infection of the:", "choices": {"A": "heart", "B": "lungs", "C": "kidneys", "D": "liver"}, "correct": "B", "explain": "pneumon (lung) + -ia = lung condition / infection."}, {"id": "q081", "tier": 2, "tags": ["term", "hemo"], "prompt": "Anemia is a condition involving:", "choices": {"A": "too much sugar", "B": "not enough healthy red blood cells / hemoglobin", "C": "high blood pressure", "D": "extra white cells only"}, "correct": "B", "explain": "an- (without) + -emia (blood condition) = blood lacking enough healthy RBCs."}, {"id": "q082", "tier": 2, "tags": ["term", "arthro"], "prompt": "Arthritis means:", "choices": {"A": "bone break", "B": "joint inflammation", "C": "muscle spasm", "D": "tendon tear"}, "correct": "B", "explain": "arthr (joint) + -itis = joint inflammation."}, {"id": "q083", "tier": 2, "tags": ["term", "rhin"], "prompt": "Rhinitis is inflammation of the:", "choices": {"A": "throat", "B": "ear", "C": "nose", "D": "sinuses only"}, "correct": "C", "explain": "rhin (nose) + -itis = nose inflammation."}, {"id": "q084", "tier": 2, "tags": ["term", "ot"], "prompt": "Otitis is inflammation of the:", "choices": {"A": "eye", "B": "ear", "C": "nose", "D": "throat"}, "correct": "B", "explain": "ot (ear) + -itis = ear inflammation (often called an ear infection)."}, {"id": "q085", "tier": 2, "tags": ["term", "cyst"], "prompt": "Cystitis is inflammation of the:", "choices": {"A": "kidney", "B": "urinary bladder", "C": "gallbladder", "D": "ovary"}, "correct": "B", "explain": "cyst (bladder) + -itis = bladder inflammation."}, {"id": "q086", "tier": 2, "tags": ["term", "pathy"], "prompt": "Cardiomyopathy is a disease of the:", "choices": {"A": "heart muscle", "B": "lung tissue", "C": "kidney filters", "D": "brain vessels"}, "correct": "A", "explain": "cardi/o + my/o + -pathy = disease of the heart muscle."}, {"id": "q087", "tier": 2, "tags": ["term", "scopy"], "prompt": "A colonoscopy is a procedure to:", "choices": {"A": "remove the colon", "B": "view the inside of the colon", "C": "X-ray the lungs", "D": "biopsy the liver"}, "correct": "B", "explain": "colon/o + -scopy = process of viewing the colon."}, {"id": "q088", "tier": 2, "tags": ["term", "ectomy"], "prompt": "An appendectomy is:", "choices": {"A": "appendix repair", "B": "surgical removal of the appendix", "C": "appendix infection", "D": "appendix X-ray"}, "correct": "B", "explain": "append + -ectomy = surgical removal of the appendix."}, {"id": "q089", "tier": 2, "tags": ["term", "hypo"], "prompt": "Hypoglycemia means:", "choices": {"A": "high blood sugar", "B": "low blood sugar", "C": "high blood pressure", "D": "low blood pressure"}, "correct": "B", "explain": "hypo- (low) + glyc (sugar) + -emia (blood) = low blood sugar."}, {"id": "q090", "tier": 2, "tags": ["term", "hyper"], "prompt": "Hypertension means:", "choices": {"A": "low blood pressure", "B": "high blood pressure", "C": "fast heart rate", "D": "slow breathing"}, "correct": "B", "explain": "hyper- (high/excessive) + tension (pressure) = high blood pressure."}, {"id": "q091", "tier": 2, "tags": ["term", "dys"], "prompt": "Dyspnea means:", "choices": {"A": "painful urination", "B": "difficult breathing", "C": "difficulty swallowing", "D": "poor digestion"}, "correct": "B", "explain": "dys- (difficult) + -pnea (breathing) = difficult breathing."}, {"id": "q092", "tier": 2, "tags": ["term", "dys"], "prompt": "Dysphagia means difficulty:", "choices": {"A": "breathing", "B": "swallowing", "C": "speaking", "D": "walking"}, "correct": "B", "explain": "dys- + -phagia (eating/swallowing) = difficulty swallowing."}, {"id": "q093", "tier": 2, "tags": ["term", "poly"], "prompt": "Polyuria means:", "choices": {"A": "no urine", "B": "painful urine", "C": "excessive urination", "D": "bloody urine"}, "correct": "C", "explain": "poly- (many/much) + -uria (urine) = much urine / frequent urination."}, {"id": "q094", "tier": 2, "tags": ["build", "prefix"], "prompt": "Which word means \"around the heart\"?", "choices": {"A": "Endocardium", "B": "Pericardium", "C": "Myocardium", "D": "Epicardium"}, "correct": "B", "explain": "peri- (around) + cardi (heart) = pericardium — the sac around the heart."}, {"id": "q095", "tier": 2, "tags": ["build", "prefix"], "prompt": "Intravenous means:", "choices": {"A": "between veins", "B": "within a vein", "C": "under a vein", "D": "around a vein"}, "correct": "B", "explain": "intra- (within) + ven (vein) = within a vein (IV fluids/medicine)."}, {"id": "q096", "tier": 2, "tags": ["build", "prefix"], "prompt": "Subcutaneous means:", "choices": {"A": "on the skin", "B": "under the skin", "C": "within muscle", "D": "into a vein"}, "correct": "B", "explain": "sub- (under) + cutane (skin) = under the skin."}, {"id": "q097", "tier": 2, "tags": ["term", "leuk"], "prompt": "Leukocyte is another name for a:", "choices": {"A": "red blood cell", "B": "white blood cell", "C": "platelet", "D": "plasma cell only"}, "correct": "B", "explain": "leuk/o (white) + -cyte (cell) = white blood cell."}, {"id": "q098", "tier": 2, "tags": ["term", "erythro"], "prompt": "Erythrocyte is another name for a:", "choices": {"A": "white blood cell", "B": "red blood cell", "C": "nerve cell", "D": "bone cell"}, "correct": "B", "explain": "erythr/o (red) + -cyte (cell) = red blood cell."}, {"id": "q099", "tier": 2, "tags": ["term", "thromb"], "prompt": "A thrombosis is a condition involving a:", "choices": {"A": "broken bone", "B": "blood clot", "C": "swollen gland", "D": "torn muscle"}, "correct": "B", "explain": "thromb/o = clot. Thrombosis = blood clot condition."}, {"id": "q100", "tier": 2, "tags": ["systems", "digestive"], "prompt": "Which term relates to the liver?", "choices": {"A": "Nephrology", "B": "Hepatology", "C": "Pulmonology", "D": "Dermatology"}, "correct": "B", "explain": "hepat/o = liver. Hepatology = study/treatment of liver diseases."}, {"id": "q101", "tier": 2, "tags": ["systems", "respiratory"], "prompt": "Pulmonology is the study of the:", "choices": {"A": "heart", "B": "lungs", "C": "kidneys", "D": "nerves"}, "correct": "B", "explain": "pulmon/o = lung. Pulmonology = lung specialty."}, {"id": "q102", "tier": 2, "tags": ["systems", "urinary"], "prompt": "Urology mainly deals with the:", "choices": {"A": "digestive tract", "B": "urinary system (and male reproductive)", "C": "nervous system", "D": "skin"}, "correct": "B", "explain": "ur/o = urine / urinary tract. Urology = urinary system specialty."}, {"id": "q103", "tier": 2, "tags": ["term", "algia"], "prompt": "Cephalalgia means:", "choices": {"A": "stomach ache", "B": "headache", "C": "backache", "D": "toothache"}, "correct": "B", "explain": "cephal (head) + -algia (pain) = headache."}, {"id": "q104", "tier": 2, "tags": ["term", "oma"], "prompt": "A melanoma is a tumor involving:", "choices": {"A": "bone cells", "B": "pigment (melanin) cells of the skin", "C": "liver cells", "D": "fat cells"}, "correct": "B", "explain": "melan/o (black/pigment) + -oma (tumor) = pigment-cell tumor, often of the skin."}, {"id": "q105", "tier": 2, "tags": ["term", "sclerosis"], "prompt": "Arteriosclerosis means:", "choices": {"A": "softening of arteries", "B": "hardening of arteries", "C": "widening of veins", "D": "inflammation of capillaries"}, "correct": "B", "explain": "arteri/o + -sclerosis (hardening) = hardening of the arteries."}, {"id": "q106", "tier": 3, "tags": ["clinical", "cardio"], "prompt": "Pericarditis is inflammation of the:", "choices": {"A": "heart muscle itself", "B": "membrane surrounding the heart", "C": "heart valves only", "D": "aorta"}, "correct": "B", "explain": "peri- (around) + cardi + -itis = inflammation of the pericardium."}, {"id": "q107", "tier": 3, "tags": ["clinical", "cardio"], "prompt": "Endocarditis is inflammation of the:", "choices": {"A": "outer heart sac", "B": "inner lining of the heart", "C": "lung lining", "D": "vein walls"}, "correct": "B", "explain": "endo- (within) + cardi + -itis = inflammation of the heart's inner lining."}, {"id": "q108", "tier": 3, "tags": ["clinical", "neuro"], "prompt": "Encephalitis means:", "choices": {"A": "spinal cord inflammation", "B": "brain inflammation", "C": "skull fracture", "D": "nerve tumor"}, "correct": "B", "explain": "encephal (brain) + -itis = brain inflammation."}, {"id": "q109", "tier": 3, "tags": ["clinical", "neuro"], "prompt": "Meningitis is inflammation of the:", "choices": {"A": "brain tissue only", "B": "membranes covering the brain and spinal cord", "C": "skull bones", "D": "peripheral nerves"}, "correct": "B", "explain": "mening (meninges) + -itis = inflammation of the protective membranes."}, {"id": "q110", "tier": 3, "tags": ["clinical", "build"], "prompt": "Which term means surgical repair of a joint?", "choices": {"A": "Arthrotomy", "B": "Arthroplasty", "C": "Arthroscopy", "D": "Arthrectomy"}, "correct": "B", "explain": "arthr/o + -plasty (surgical repair) = arthroplasty."}, {"id": "q111", "tier": 3, "tags": ["clinical", "build"], "prompt": "Which term means viewing inside a joint?", "choices": {"A": "Arthroplasty", "B": "Arthroscopy", "C": "Arthralgia", "D": "Arthritis"}, "correct": "B", "explain": "arthr/o + -scopy (viewing) = arthroscopy."}, {"id": "q112", "tier": 3, "tags": ["clinical", "build"], "prompt": "Nephrectomy means:", "choices": {"A": "kidney X-ray", "B": "surgical removal of a kidney", "C": "kidney inflammation", "D": "creating a kidney opening"}, "correct": "B", "explain": "nephr + -ectomy = surgical removal of a kidney."}, {"id": "q113", "tier": 3, "tags": ["clinical", "build"], "prompt": "Tracheostomy means:", "choices": {"A": "removing the trachea", "B": "surgically creating an opening into the trachea", "C": "viewing the trachea", "D": "repairing the trachea"}, "correct": "B", "explain": "trache/o + -ostomy = surgical opening into the windpipe."}, {"id": "q114", "tier": 3, "tags": ["clinical", "build"], "prompt": "Electrocardiogram (ECG/EKG) is a:", "choices": {"A": "heart ultrasound", "B": "record of the heart's electrical activity", "C": "heart surgery", "D": "blood pressure cuff"}, "correct": "B", "explain": "electro + cardi/o + -gram (record) = electrical heart record."}, {"id": "q115", "tier": 3, "tags": ["clinical", "hemo"], "prompt": "Hematoma is:", "choices": {"A": "a blood cancer", "B": "a collection / swelling of blood (bruise-like mass)", "C": "low platelets", "D": "high white cells"}, "correct": "B", "explain": "hemat (blood) + -oma (mass) = a localized blood collection."}, {"id": "q116", "tier": 3, "tags": ["clinical", "hemo"], "prompt": "Hemorrhage means:", "choices": {"A": "clotting", "B": "excessive bleeding / bursting forth of blood", "C": "low oxygen", "D": "blood typing"}, "correct": "B", "explain": "hem/o + -rrhage (bursting forth) = heavy bleeding."}, {"id": "q117", "tier": 3, "tags": ["clinical", "dys"], "prompt": "Dysuria means:", "choices": {"A": "no urine output", "B": "painful or difficult urination", "C": "bloody urine", "D": "too much urine"}, "correct": "B", "explain": "dys- (painful/difficult) + -uria (urine) = painful urination."}, {"id": "q118", "tier": 3, "tags": ["clinical", "a-an"], "prompt": "Aphasia is the loss of ability to:", "choices": {"A": "walk", "B": "speak or understand language", "C": "see", "D": "hear"}, "correct": "B", "explain": "a- (without) + -phasia (speech) = without speech / language ability."}, {"id": "q119", "tier": 3, "tags": ["clinical", "a-an"], "prompt": "Apnea means:", "choices": {"A": "fast breathing", "B": "temporary absence of breathing", "C": "painful breathing", "D": "deep breathing"}, "correct": "B", "explain": "a- (without) + -pnea (breathing) = without breathing (pauses in breathing)."}, {"id": "q120", "tier": 3, "tags": ["clinical", "hyper"], "prompt": "Hyperglycemia means:", "choices": {"A": "low blood sugar", "B": "high blood sugar", "C": "high blood calcium", "D": "low blood sodium"}, "correct": "B", "explain": "hyper- + glyc + -emia = high blood sugar."}, {"id": "q121", "tier": 3, "tags": ["clinical", "hypo"], "prompt": "Hypothermia means:", "choices": {"A": "high body temperature", "B": "abnormally low body temperature", "C": "fever only", "D": "heat stroke"}, "correct": "B", "explain": "hypo- (low) + therm (heat) + -ia = low body temperature."}, {"id": "q122", "tier": 3, "tags": ["clinical", "osteo"], "prompt": "Osteomyelitis is inflammation of:", "choices": {"A": "joint fluid only", "B": "bone and bone marrow", "C": "muscle fibers", "D": "skin and fat"}, "correct": "B", "explain": "oste/o + myel (marrow) + -itis = bone/marrow inflammation."}, {"id": "q123", "tier": 3, "tags": ["clinical", "gastro"], "prompt": "Gastroenteritis is inflammation of the:", "choices": {"A": "liver and pancreas", "B": "stomach and intestines", "C": "esophagus only", "D": "gallbladder"}, "correct": "B", "explain": "gastr/o + enter (intestine) + -itis = stomach and intestine inflammation."}, {"id": "q124", "tier": 3, "tags": ["clinical", "pulmon"], "prompt": "Pneumothorax is air in the:", "choices": {"A": "bloodstream", "B": "pleural space (around the lung) causing lung collapse", "C": "stomach", "D": "skull"}, "correct": "B", "explain": "pneum/o (air) + thorax (chest) = air in the chest cavity outside the lung."}, {"id": "q125", "tier": 3, "tags": ["clinical", "phleb"], "prompt": "Phlebitis is inflammation of a:", "choices": {"A": "artery", "B": "vein", "C": "capillary bed", "D": "lymph node"}, "correct": "B", "explain": "phleb (vein) + -itis = vein inflammation."}, {"id": "q126", "tier": 3, "tags": ["clinical", "build"], "prompt": "Which term means enlargement of the heart?", "choices": {"A": "Cardiomegaly", "B": "Cardiomyopathy", "C": "Carditis", "D": "Cardiograph"}, "correct": "A", "explain": "cardi/o + -megaly = heart enlargement."}, {"id": "q127", "tier": 3, "tags": ["clinical", "build"], "prompt": "Laryngitis is inflammation of the:", "choices": {"A": "lungs", "B": "voice box (larynx)", "C": "bronchi", "D": "sinuses"}, "correct": "B", "explain": "laryng (larynx) + -itis = voice box inflammation — often causes hoarseness."}, {"id": "q128", "tier": 3, "tags": ["clinical", "build"], "prompt": "A biopsy is:", "choices": {"A": "full organ removal", "B": "removal of a tissue sample for examination", "C": "X-ray imaging", "D": "blood transfusion"}, "correct": "B", "explain": "bi/o (life) + -opsy (view) = viewing living tissue (sample taken for study)."}, {"id": "q129", "tier": 3, "tags": ["clinical", "suffix"], "prompt": "The difference: -otomy vs -ectomy?", "choices": {"A": "-otomy removes; -ectomy cuts into", "B": "-otomy cuts into; -ectomy removes", "C": "they mean the same", "D": "-otomy repairs; -ectomy views"}, "correct": "B", "explain": "-otomy = incision/cutting into. -ectomy = surgical removal."}, {"id": "q130", "tier": 3, "tags": ["clinical", "suffix"], "prompt": "-gram vs -graph vs -graphy:", "choices": {"A": "all mean the machine", "B": "-gram = record; -graph = instrument; -graphy = process", "C": "-gram = process; -graph = record", "D": "they are interchangeable"}, "correct": "B", "explain": "Remember: gram = the picture/record, graph = the machine, graphy = the process."}, {"id": "q131", "tier": 3, "tags": ["clinical", "prefix"], "prompt": "Intercostal muscles are located:", "choices": {"A": "inside the ribs", "B": "between the ribs", "C": "above the ribs", "D": "under the skin only"}, "correct": "B", "explain": "inter- (between) + cost (rib) = between the ribs."}, {"id": "q132", "tier": 3, "tags": ["clinical", "prefix"], "prompt": "Epidermis is the:", "choices": {"A": "inner skin layer", "B": "outermost skin layer", "C": "fat under skin", "D": "muscle under skin"}, "correct": "B", "explain": "epi- (upon) + dermis (skin) = outer skin layer."}, {"id": "q133", "tier": 3, "tags": ["clinical", "systems"], "prompt": "Hematuria means:", "choices": {"A": "protein in urine", "B": "blood in urine", "C": "sugar in urine", "D": "pus in urine"}, "correct": "B", "explain": "hemat (blood) + -uria (urine) = blood in the urine."}, {"id": "q134", "tier": 3, "tags": ["clinical", "systems"], "prompt": "Tachypnea means:", "choices": {"A": "slow breathing", "B": "fast breathing", "C": "no breathing", "D": "deep breathing only"}, "correct": "B", "explain": "tachy- (fast) + -pnea (breathing) = rapid breathing."}, {"id": "q135", "tier": 3, "tags": ["clinical", "oma"], "prompt": "A lipoma is a tumor of:", "choices": {"A": "bone", "B": "fat tissue", "C": "nerve", "D": "muscle"}, "correct": "B", "explain": "lip/o (fat) + -oma = fatty tumor (usually benign)."}, {"id": "q136", "tier": 4, "tags": ["challenge", "cardio"], "prompt": "A patient has a heart rate of 48 bpm at rest. This is best described as:", "choices": {"A": "Tachycardia", "B": "Bradycardia", "C": "Hypertension", "D": "Arrhythmia only"}, "correct": "B", "explain": "Normal resting HR is ~60–100. Below 60 = bradycardia (brady- = slow)."}, {"id": "q137", "tier": 4, "tags": ["challenge", "cardio"], "prompt": "A resting heart rate of 120 bpm in a calm teen most nearly indicates:", "choices": {"A": "Bradycardia", "B": "Tachycardia", "C": "Hypotension", "D": "Apnea"}, "correct": "B", "explain": "Above ~100 bpm at rest = tachycardia (tachy- = fast)."}, {"id": "q138", "tier": 4, "tags": ["challenge", "build"], "prompt": "Surgical removal of the gallbladder is called:", "choices": {"A": "Cholecystitis", "B": "Cholecystectomy", "C": "Cholelithiasis", "D": "Choledochotomy"}, "correct": "B", "explain": "cholecyst (gallbladder) + -ectomy = gallbladder removal."}, {"id": "q139", "tier": 4, "tags": ["challenge", "build"], "prompt": "Inflammation of the gallbladder is:", "choices": {"A": "Cholecystectomy", "B": "Cholecystitis", "C": "Cholelithiasis", "D": "Hepatitis"}, "correct": "B", "explain": "cholecyst + -itis = gallbladder inflammation. (Cholelithiasis = gallstones.)"}, {"id": "q140", "tier": 4, "tags": ["challenge", "hemo"], "prompt": "A CBC shows very few erythrocytes. The patient may have:", "choices": {"A": "Leukemia only", "B": "Anemia", "C": "Thrombosis", "D": "Hemophilia only"}, "correct": "B", "explain": "Few erythrocytes (red cells) → anemia (an- + -emia)."}, {"id": "q141", "tier": 4, "tags": ["challenge", "prefix"], "prompt": "Medicine given under the tongue is:", "choices": {"A": "Subcutaneous", "B": "Sublingual", "C": "Intramuscular", "D": "Intravenous"}, "correct": "B", "explain": "sub- (under) + lingu (tongue) = under the tongue."}, {"id": "q142", "tier": 4, "tags": ["challenge", "prefix"], "prompt": "An intramuscular injection goes:", "choices": {"A": "into a vein", "B": "under the skin", "C": "into a muscle", "D": "into a joint"}, "correct": "C", "explain": "intra- (within) + muscul = into the muscle."}, {"id": "q143", "tier": 4, "tags": ["challenge", "neuro"], "prompt": "Paralysis of the lower half of the body is:", "choices": {"A": "Hemiplegia", "B": "Paraplegia", "C": "Quadriplegia", "D": "Neuralgia"}, "correct": "B", "explain": "Paraplegia = paralysis of the lower body. Hemiplegia = one side; quadriplegia = all four limbs."}, {"id": "q144", "tier": 4, "tags": ["challenge", "neuro"], "prompt": "Paralysis of one side of the body is:", "choices": {"A": "Paraplegia", "B": "Hemiplegia", "C": "Monoplegia", "D": "Cardioplegia"}, "correct": "B", "explain": "hemi- (half) + -plegia (paralysis) = one-sided paralysis."}, {"id": "q145", "tier": 4, "tags": ["challenge", "clinical"], "prompt": "A patient with difficult, painful breathing has:", "choices": {"A": "Apnea", "B": "Dyspnea", "C": "Eupnea", "D": "Hypopnea only"}, "correct": "B", "explain": "dys- + -pnea = dyspnea. Apnea = no breathing; eupnea = normal breathing."}, {"id": "q146", "tier": 4, "tags": ["challenge", "clinical"], "prompt": "After surgery, a patient develops inflammation around the heart sac. Term?", "choices": {"A": "Myocarditis", "B": "Endocarditis", "C": "Pericarditis", "D": "Pleuritis"}, "correct": "C", "explain": "peri- (around) + cardi + -itis = pericarditis."}, {"id": "q147", "tier": 4, "tags": ["challenge", "build"], "prompt": "Creating an artificial opening into the colon for waste elimination is a:", "choices": {"A": "Colectomy", "B": "Colostomy", "C": "Colonoscopy", "D": "Colotomy"}, "correct": "B", "explain": "col/o + -ostomy = surgical opening into the colon."}, {"id": "q148", "tier": 4, "tags": ["challenge", "systems"], "prompt": "Which specialist treats skin disorders?", "choices": {"A": "Neurologist", "B": "Dermatologist", "C": "Cardiologist", "D": "Nephrologist"}, "correct": "B", "explain": "dermat/o + -ologist = skin specialist."}, {"id": "q149", "tier": 4, "tags": ["challenge", "systems"], "prompt": "Which specialist would treat a kidney stone?", "choices": {"A": "Pulmonologist", "B": "Urologist / Nephrologist", "C": "Dermatologist", "D": "Orthopedist"}, "correct": "B", "explain": "Kidneys/urinary tract → nephrologist (kidney) or urologist (urinary system)."}, {"id": "q150", "tier": 4, "tags": ["challenge", "osteo"], "prompt": "Softening of bone (often from vitamin D deficiency) is:", "choices": {"A": "Osteoporosis", "B": "Osteomalacia", "C": "Osteomyelitis", "D": "Osteoma"}, "correct": "B", "explain": "-malacia = softening. Osteomalacia = soft bones. Osteoporosis = porous/brittle bones."}, {"id": "q151", "tier": 4, "tags": ["challenge", "build"], "prompt": "Rhinoplasty is surgical repair of the:", "choices": {"A": "ear", "B": "nose", "C": "throat", "D": "jaw"}, "correct": "B", "explain": "rhin/o + -plasty = nose reshaping/repair."}, {"id": "q152", "tier": 4, "tags": ["challenge", "clinical"], "prompt": "Blood in the joint space after injury is called:", "choices": {"A": "Hematuria", "B": "Hemarthrosis", "C": "Hematoma of skin only", "D": "Hemolysis"}, "correct": "B", "explain": "hem (blood) + arthr (joint) + -osis = blood in a joint."}, {"id": "q153", "tier": 4, "tags": ["challenge", "prefix"], "prompt": "A bilateral finding means it is present:", "choices": {"A": "on one side", "B": "on both sides", "C": "in the middle", "D": "above and below"}, "correct": "B", "explain": "bi- (two) + lateral (side) = both sides."}, {"id": "q154", "tier": 4, "tags": ["challenge", "clinical"], "prompt": "Oliguria means:", "choices": {"A": "no urine", "B": "scanty / decreased urine output", "C": "excessive urine", "D": "painful urine"}, "correct": "B", "explain": "olig/o (scanty/few) + -uria = little urine. Anuria = no urine; polyuria = much urine."}, {"id": "q155", "tier": 4, "tags": ["challenge", "build"], "prompt": "A mammogram is a:", "choices": {"A": "breast ultrasound only", "B": "radiographic record of the breast", "C": "breast biopsy", "D": "breast removal"}, "correct": "B", "explain": "mamm/o (breast) + -gram (record) = breast imaging record."}, {"id": "q156", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Analyze: \"hyperthyroidism.\" The patient likely has:", "choices": {"A": "underactive thyroid", "B": "overactive thyroid", "C": "no thyroid", "D": "thyroid cancer only"}, "correct": "B", "explain": "hyper- = excessive. Hyperthyroidism = overactive thyroid hormone production."}, {"id": "q157", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Analyze: \"hypothyroidism.\" Word parts tell you:", "choices": {"A": "too much thyroid hormone", "B": "too little thyroid activity/hormone", "C": "thyroid removal", "D": "thyroid inflammation only"}, "correct": "B", "explain": "hypo- = under/deficient. Hypothyroidism = underactive thyroid."}, {"id": "q158", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "A HOSA stem: inflammation of the liver caused by a virus is most precisely:", "choices": {"A": "Hepatoma", "B": "Hepatitis", "C": "Hepatomegaly", "D": "Hepatectomy"}, "correct": "B", "explain": "-itis = inflammation. Viral hepatitis = liver inflammation from a virus."}, {"id": "q159", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Instrument used to visually examine the ear:", "choices": {"A": "Ophthalmoscope", "B": "Otoscope", "C": "Endoscope", "D": "Stethoscope"}, "correct": "B", "explain": "ot/o (ear) + -scope (instrument for viewing) = otoscope."}, {"id": "q160", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Instrument used to visually examine the eye:", "choices": {"A": "Otoscope", "B": "Ophthalmoscope", "C": "Laryngoscope", "D": "Microscope"}, "correct": "B", "explain": "ophthalm/o (eye) + -scope = ophthalmoscope."}, {"id": "q161", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Which term means \"pertaining to under the skin\"?", "choices": {"A": "Epidermal", "B": "Hypodermic / subcutaneous", "C": "Intradermal only meaning on top", "D": "Transdermal meaning inside muscle"}, "correct": "B", "explain": "hypo-/sub- + derm = under the skin. (Hypodermic needle, subcutaneous injection.)"}, {"id": "q162", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Word analysis: \"gastroenterologist\" is a specialist of the:", "choices": {"A": "heart and lungs", "B": "stomach and intestines", "C": "brain and nerves", "D": "bones and joints"}, "correct": "B", "explain": "gastr/o + enter/o + -ologist = GI tract specialist."}, {"id": "q163", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "A patient with polyuria and polydipsia may be evaluated for diabetes. Polydipsia means:", "choices": {"A": "excessive hunger", "B": "excessive thirst", "C": "excessive sweating", "D": "excessive sleep"}, "correct": "B", "explain": "poly- (much) + -dipsia (thirst) = excessive thirst."}, {"id": "q164", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Angioplasty is a procedure to:", "choices": {"A": "remove a vessel", "B": "surgically repair / open a blood vessel", "C": "image the brain", "D": "biopsy muscle"}, "correct": "B", "explain": "angi/o (vessel) + -plasty = vessel repair (often ballooning open an artery)."}, {"id": "q165", "tier": 4, "tags": ["challenge", "hosa"], "prompt": "Leukocytosis means an abnormal increase in:", "choices": {"A": "red blood cells", "B": "white blood cells", "C": "platelets", "D": "plasma proteins"}, "correct": "B", "explain": "leuk/o (white) + cyt (cell) + -osis (condition) = elevated WBC count."}];
+
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "hosa_medterm_v1";
+  const BANK = window.HOSA_BANK || [];
+  const TIER_NAMES = {
+    1: "L1 Foundations",
+    2: "L2 Common terms",
+    3: "L3 Clinical",
+    4: "L4 Challenge"
+  };
+  const TIER_BLURBS = {
+    1: "Word parts & body basics",
+    2: "Systems & everyday terms",
+    3: "Multi-part clinical words",
+    4: "HOSA-style stems"
+  };
+  const ENCOURAGE = [
+    "Yes! You nailed it!",
+    "Spot on — great word-part skills!",
+    "Awesome — that one stuck!",
+    "Correct! You're leveling up!",
+    "Boom — got it!",
+    "Excellent recall!"
+  ];
+  const SESSION_LEN = { practice: 12, focus: 12, challenge: 15 };
+  const UNLOCK_ACC = 0.75;
+  const UNLOCK_MIN = 8;
+  const RECENT_WINDOW = 12;
+
+  function defaultProgress() {
+    return {
+      unlockedTier: 1,
+      totalCorrect: 0,
+      totalAnswered: 0,
+      recentByTier: { 1: [], 2: [], 3: [], 4: [] },
+      terms: {},
+      tags: {},
+      lastMode: "practice"
+    };
+  }
+
+  function loadProgress() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultProgress();
+      const p = Object.assign(defaultProgress(), JSON.parse(raw));
+      p.recentByTier = Object.assign({ 1: [], 2: [], 3: [], 4: [] }, p.recentByTier || {});
+      p.terms = p.terms || {};
+      p.tags = p.tags || {};
+      return p;
+    } catch (e) {
+      return defaultProgress();
+    }
+  }
+
+  function saveProgress() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }
+    catch (e) { /* ignore quota */ }
+  }
+
+  let progress = loadProgress();
+
+  const state = {
+    mode: "practice",
+    timed: false,
+    questions: [],
+    index: 0,
+    score: 0,
+    answered: false,
+    timerId: null,
+    timerLeft: 0,
+    sessionWrongTags: {},
+    lastMode: "practice"
+  };
+
+  const el = {
+    home: document.getElementById("screen-home"),
+    quiz: document.getElementById("screen-quiz"),
+    results: document.getElementById("screen-results"),
+    homeMeter: document.getElementById("home-meter"),
+    homeTier: document.getElementById("home-tier-label"),
+    homeStats: document.getElementById("home-stats"),
+    homePills: document.getElementById("home-tier-pills"),
+    bankCount: document.getElementById("bank-count"),
+    optTimer: document.getElementById("opt-timer"),
+    progressLabel: document.getElementById("progress-label"),
+    scoreLabel: document.getElementById("score-label"),
+    progressFill: document.getElementById("progress-fill"),
+    timerLabel: document.getElementById("timer-label"),
+    tagChip: document.getElementById("tag-chip"),
+    tierChip: document.getElementById("tier-chip"),
+    prompt: document.getElementById("question-prompt"),
+    choices: document.getElementById("choices"),
+    feedback: document.getElementById("feedback"),
+    btnNext: document.getElementById("btn-next"),
+    resultsMode: document.getElementById("results-mode"),
+    resultsHeadline: document.getElementById("results-headline"),
+    resultsScore: document.getElementById("results-score"),
+    resultsTotal: document.getElementById("results-total"),
+    resultsMessage: document.getElementById("results-message"),
+    resultsTier: document.getElementById("results-tier-label"),
+    resultsMeter: document.getElementById("results-meter"),
+    resultsStats: document.getElementById("results-stats"),
+    resultsPills: document.getElementById("results-tier-pills"),
+    reviewBox: document.getElementById("review-box"),
+    reviewList: document.getElementById("review-list")
+  };
+
+  function showScreen(name) {
+    const map = { home: el.home, quiz: el.quiz, results: el.results };
+    Object.keys(map).forEach(function (key) {
+      const s = map[key];
+      const on = key === name;
+      s.classList.toggle("active", on);
+      if (on) {
+        s.removeAttribute("hidden");
+        s.style.display = "block";
+      } else {
+        s.setAttribute("hidden", "");
+        s.style.display = "none";
+      }
+    });
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function termStat(id) {
+    if (!progress.terms[id]) progress.terms[id] = { correct: 0, wrong: 0, streak: 0 };
+    return progress.terms[id];
+  }
+
+  function tagStat(tag) {
+    if (!progress.tags[tag]) progress.tags[tag] = { correct: 0, wrong: 0 };
+    return progress.tags[tag];
+  }
+
+  function tierAccuracy(tier) {
+    const r = progress.recentByTier[tier] || [];
+    if (!r.length) return null;
+    const ok = r.filter(Boolean).length;
+    return ok / r.length;
+  }
+
+  function maybeUnlock() {
+    let unlocked = progress.unlockedTier || 1;
+    for (let t = 1; t < 4; t++) {
+      if (unlocked < t) break;
+      const recent = progress.recentByTier[t] || [];
+      if (recent.length >= UNLOCK_MIN) {
+        const windowed = recent.slice(-RECENT_WINDOW);
+        const acc = windowed.filter(Boolean).length / windowed.length;
+        if (acc >= UNLOCK_ACC) {
+          if (unlocked < t + 1) unlocked = t + 1;
+        }
+      }
+    }
+    progress.unlockedTier = Math.min(4, Math.max(1, unlocked));
+  }
+
+  function masteryPercent() {
+    const u = progress.unlockedTier;
+    const base = ((u - 1) / 4) * 100;
+    const acc = tierAccuracy(u);
+    const slice = acc == null ? 0 : acc * 25;
+    return Math.min(100, Math.round(base + slice));
+  }
+
+  function renderTierPills(container) {
+    container.innerHTML = "";
+    for (let t = 1; t <= 4; t++) {
+      const pill = document.createElement("span");
+      pill.className = "tier-pill";
+      if (t <= progress.unlockedTier) pill.classList.add("open");
+      if (t === progress.unlockedTier) pill.classList.add("current");
+      const acc = tierAccuracy(t);
+      const accTxt = acc == null ? "—" : Math.round(acc * 100) + "%";
+      pill.textContent = (t <= progress.unlockedTier ? "✓ " : "🔒 ") + "L" + t + " " + accTxt;
+      pill.title = TIER_BLURBS[t];
+      container.appendChild(pill);
+    }
+  }
+
+  function refreshHome() {
+    maybeUnlock();
+    saveProgress();
+    const u = progress.unlockedTier;
+    el.homeTier.textContent = "Level " + u + " · " + TIER_BLURBS[u];
+    el.homeMeter.style.width = masteryPercent() + "%";
+    const answered = progress.totalAnswered || 0;
+    const correct = progress.totalCorrect || 0;
+    const pct = answered ? Math.round((correct / answered) * 100) : 0;
+    el.homeStats.innerHTML =
+      "<span>" + answered + " answered</span>" +
+      "<span>" + pct + "% lifetime accuracy</span>" +
+      "<span>" + BANK.length + " terms in bank</span>";
+    renderTierPills(el.homePills);
+    el.bankCount.textContent = BANK.length + " questions";
+  }
+
+  function weaknessScore(q) {
+    const ts = termStat(q.id);
+    let score = ts.wrong * 3 - ts.streak * 2 - ts.correct;
+    (q.tags || []).forEach((tag) => {
+      const tg = tagStat(tag);
+      score += tg.wrong * 2 - tg.correct;
+    });
+    return score;
+  }
+
+  function pickQuestions(mode) {
+    const n = SESSION_LEN[mode] || 12;
+    const unlocked = progress.unlockedTier || 1;
+    let pool = BANK.filter((q) => q.tier <= unlocked);
+
+    if (mode === "focus") {
+      const ranked = shuffle(pool).sort((a, b) => weaknessScore(b) - weaknessScore(a));
+      const weak = ranked.filter((q) => weaknessScore(q) > 0);
+      const chosen = (weak.length >= Math.ceil(n * 0.6) ? weak : ranked).slice(0, n);
+      return shuffle(chosen);
+    }
+
+    if (mode === "challenge") {
+      const hi = pool.filter((q) => q.tier >= Math.max(1, unlocked - 1));
+      const lo = pool.filter((q) => q.tier < Math.max(1, unlocked - 1));
+      const needHi = Math.ceil(n * 0.75);
+      const picked = shuffle(hi).slice(0, needHi);
+      const rest = shuffle(lo.concat(hi.filter((q) => picked.indexOf(q) === -1))).slice(0, n - picked.length);
+      return shuffle(picked.concat(rest));
+    }
+
+    const byTier = { 1: [], 2: [], 3: [], 4: [] };
+    pool.forEach((q) => byTier[q.tier].push(q));
+    Object.keys(byTier).forEach((k) => { byTier[k] = shuffle(byTier[k]); });
+
+    const weights = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    if (unlocked === 1) { weights[1] = 1; }
+    else if (unlocked === 2) { weights[1] = 0.35; weights[2] = 0.65; }
+    else if (unlocked === 3) { weights[1] = 0.15; weights[2] = 0.35; weights[3] = 0.5; }
+    else { weights[1] = 0.1; weights[2] = 0.2; weights[3] = 0.35; weights[4] = 0.35; }
+
+    const chosen = [];
+    const used = {};
+    for (let t = 1; t <= 4; t++) {
+      const count = Math.round(n * weights[t]);
+      const candidates = byTier[t].slice().sort((a, b) => weaknessScore(b) - weaknessScore(a));
+      for (let i = 0; i < candidates.length; i++) {
+        const q = candidates[i];
+        if (chosen.length >= n) break;
+        if (used[q.id]) continue;
+        const have = chosen.filter((x) => x.tier === t).length;
+        if (count > 0 && have >= count) continue;
+        chosen.push(q);
+        used[q.id] = true;
+      }
+    }
+    const leftover = shuffle(pool.filter((q) => !used[q.id]));
+    while (chosen.length < n && leftover.length) {
+      chosen.push(leftover.pop());
+    }
+    return shuffle(chosen).slice(0, n);
+  }
+
+  function stopTimer() {
+    if (state.timerId) {
+      clearInterval(state.timerId);
+      state.timerId = null;
+    }
+    el.timerLabel.hidden = true;
+  }
+
+  function startTimer() {
+    stopTimer();
+    if (!state.timed) return;
+    state.timerLeft = 60;
+    el.timerLabel.hidden = false;
+    el.timerLabel.textContent = "60s";
+    state.timerId = setInterval(function () {
+      state.timerLeft -= 1;
+      el.timerLabel.textContent = state.timerLeft + "s";
+      if (state.timerLeft <= 0) {
+        stopTimer();
+        if (!state.answered) onAnswer(null, true);
+      }
+    }, 1000);
+  }
+
+  function recordAnswer(q, isCorrect) {
+    progress.totalAnswered += 1;
+    if (isCorrect) progress.totalCorrect += 1;
+
+    const ts = termStat(q.id);
+    if (isCorrect) {
+      ts.correct += 1;
+      ts.streak += 1;
+    } else {
+      ts.wrong += 1;
+      ts.streak = 0;
+      (q.tags || []).forEach(function (tag) {
+        state.sessionWrongTags[tag] = (state.sessionWrongTags[tag] || 0) + 1;
+      });
+    }
+    (q.tags || []).forEach(function (tag) {
+      const tg = tagStat(tag);
+      if (isCorrect) tg.correct += 1;
+      else tg.wrong += 1;
+    });
+
+    const arr = progress.recentByTier[q.tier] || [];
+    arr.push(!!isCorrect);
+    if (arr.length > 40) arr.splice(0, arr.length - 40);
+    progress.recentByTier[q.tier] = arr;
+
+    maybeUnlock();
+    saveProgress();
+  }
+
+  function startSession(mode) {
+    try {
+      stopTimer();
+      state.mode = mode;
+      state.lastMode = mode;
+      progress.lastMode = mode;
+      state.timed = mode === "challenge" && !!(el.optTimer && el.optTimer.checked);
+      state.questions = pickQuestions(mode);
+      state.index = 0;
+      state.score = 0;
+      state.answered = false;
+      state.sessionWrongTags = {};
+      if (!state.questions.length) {
+        alert("No questions available yet. Try Practice mode.");
+        return;
+      }
+      showScreen("quiz");
+      renderQuestion();
+    } catch (err) {
+      console.error(err);
+      alert("Could not start quiz: " + (err && err.message ? err.message : err));
+    }
+  }
+
+  function currentQ() {
+    return state.questions[state.index];
+  }
+
+  function renderQuestion() {
+    const q = currentQ();
+    const total = state.questions.length;
+    const num = state.index + 1;
+    state.answered = false;
+
+    el.progressLabel.textContent = num + " of " + total;
+    el.scoreLabel.textContent = "Score: " + state.score;
+    el.progressFill.style.width = ((num - 1) / total) * 100 + "%";
+    el.tagChip.textContent = (q.tags && q.tags[0]) ? q.tags[0] : "term";
+    el.tierChip.textContent = TIER_NAMES[q.tier] || ("L" + q.tier);
+    el.prompt.textContent = q.prompt;
+    el.feedback.hidden = true;
+    el.feedback.innerHTML = "";
+    el.btnNext.hidden = true;
+
+    el.choices.innerHTML = "";
+    ["A", "B", "C", "D"].forEach(function (letter) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice";
+      btn.dataset.letter = letter;
+      btn.innerHTML =
+        '<span class="letter">' + letter + "</span>" +
+        '<span class="choice-text">' + q.choices[letter] + "</span>";
+      btn.addEventListener("click", function () { onAnswer(letter, false); });
+      el.choices.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+  function onAnswer(letter, timedOut) {
+    if (state.answered) return;
+    state.answered = true;
+    stopTimer();
+
+    const q = currentQ();
+    const isCorrect = !timedOut && letter === q.correct;
+    if (isCorrect) state.score += 1;
+
+    recordAnswer(q, isCorrect);
+
+    const buttons = el.choices.querySelectorAll(".choice");
+    for (let i = 0; i < buttons.length; i++) {
+      const btn = buttons[i];
+      btn.disabled = true;
+      const L = btn.dataset.letter;
+      if (L === q.correct) btn.classList.add("correct");
+      if (letter && L === letter && letter !== q.correct) btn.classList.add("incorrect");
+      if (L !== q.correct && L !== letter) btn.classList.add("dimmed");
+    }
+
+    el.feedback.hidden = false;
+    if (isCorrect) {
+      el.feedback.className = "feedback good";
+      el.feedback.innerHTML =
+        "<strong>" + ENCOURAGE[Math.floor(Math.random() * ENCOURAGE.length)] + "</strong>" +
+        "<span>" + q.explain + "</span>";
+    } else {
+      el.feedback.className = "feedback bad";
+      const ans = q.choices[q.correct];
+      const why = timedOut
+        ? "Time's up! The answer is <strong>" + q.correct + ". " + ans + "</strong>."
+        : "Not quite — correct answer is <strong>" + q.correct + ". " + ans + "</strong>.";
+      el.feedback.innerHTML = "<strong>" + why + "</strong><span>" + q.explain + "</span>";
+    }
+
+    el.scoreLabel.textContent = "Score: " + state.score;
+    el.progressFill.style.width = ((state.index + 1) / state.questions.length) * 100 + "%";
+    el.btnNext.hidden = false;
+    el.btnNext.textContent =
+      state.index >= state.questions.length - 1 ? "See results" : "Next";
+    el.btnNext.focus();
+  }
+
+  function nextOrFinish() {
+    if (!state.answered) return;
+    if (state.index >= state.questions.length - 1) {
+      showResults();
+      return;
+    }
+    state.index += 1;
+    renderQuestion();
+  }
+
+  function topWeakTags(limit) {
+    const entries = Object.keys(state.sessionWrongTags).map(function (k) {
+      return [k, state.sessionWrongTags[k]];
+    });
+    Object.keys(progress.tags).forEach(function (tag) {
+      const tg = progress.tags[tag];
+      if (tg.wrong > tg.correct) {
+        let found = null;
+        for (let i = 0; i < entries.length; i++) {
+          if (entries[i][0] === tag) { found = entries[i]; break; }
+        }
+        if (found) found[1] += tg.wrong - tg.correct;
+        else entries.push([tag, tg.wrong - tg.correct]);
+      }
+    });
+    entries.sort(function (a, b) { return b[1] - a[1]; });
+    return entries.slice(0, limit);
+  }
+
+  function friendlyTag(tag) {
+    const map = {
+      prefix: "Prefixes", suffix: "Suffixes", root: "Word roots", body: "Body basics",
+      term: "Common terms", build: "Build-a-word", clinical: "Clinical terms",
+      challenge: "Challenge stems", systems: "Body systems",
+      cardio: "Heart (cardi/o)", neuro: "Nerves (neur/o)", gastro: "Stomach (gastr/o)",
+      hepato: "Liver (hepat/o)", nephro: "Kidney (nephr/o)", derm: "Skin (derm/o)",
+      osteo: "Bone (oste/o)", myo: "Muscle (my/o)", pneumo: "Lungs (pneum/o)",
+      hemo: "Blood (hem/o)", hyper: "hyper- (excessive)", hypo: "hypo- (under)",
+      brady: "brady- (slow)", tachy: "tachy- (fast)", "a-an": "a-/an- (without)",
+      dys: "dys- (difficult)", poly: "poly- (many)", itis: "-itis (inflammation)",
+      ectomy: "-ectomy (removal)", scopy: "-scopy (viewing)", pathy: "-pathy (disease)",
+      algia: "-algia (pain)", emia: "-emia (blood condition)", oma: "-oma (tumor)",
+      hosa: "HOSA-style analysis"
+    };
+    return map[tag] || tag;
+  }
+
+  function showResults() {
+    stopTimer();
+    const total = state.questions.length;
+    const score = state.score;
+    const pct = total ? Math.round((score / total) * 100) : 0;
+    maybeUnlock();
+    saveProgress();
+
+    const modeNames = { practice: "Practice", focus: "Focus Weak Spots", challenge: "Challenge Quiz" };
+    el.resultsMode.textContent = modeNames[state.mode] || "Quiz";
+    el.resultsScore.textContent = String(score);
+    el.resultsTotal.textContent = String(total);
+
+    let headline = "Nice work!";
+    let message = "Keep practicing — every word part you learn sticks for HOSA.";
+    if (pct === 100) { headline = "Perfect!"; message = "Incredible — you crushed every question."; }
+    else if (pct >= 90) { headline = "Outstanding!"; message = "Almost perfect. A quick review and you're quiz-ready."; }
+    else if (pct >= 75) { headline = "Great job!"; message = "Strong session. Harder tiers unlock as your accuracy stays high."; }
+    else if (pct >= 50) { headline = "Good effort!"; message = "You're learning. Use Focus Weak Spots on the tags below."; }
+    else { headline = "Keep going!"; message = "Medical terms take practice. Read the teach notes and try again."; }
+
+    el.resultsHeadline.textContent = headline;
+    el.resultsMessage.textContent = message;
+
+    const u = progress.unlockedTier;
+    el.resultsTier.textContent = "Level " + u + " · " + TIER_BLURBS[u];
+    el.resultsMeter.style.width = masteryPercent() + "%";
+    const answered = progress.totalAnswered || 0;
+    const correct = progress.totalCorrect || 0;
+    const life = answered ? Math.round((correct / answered) * 100) : 0;
+    el.resultsStats.innerHTML =
+      "<span>Session " + pct + "%</span>" +
+      "<span>Lifetime " + life + "%</span>" +
+      "<span>Unlocked through L" + u + "</span>";
+    renderTierPills(el.resultsPills);
+
+    const weak = topWeakTags(5);
+    if (weak.length && pct < 100) {
+      el.reviewBox.hidden = false;
+      el.reviewList.innerHTML = weak.map(function (pair) {
+        return "<li>" + friendlyTag(pair[0]) + "</li>";
+      }).join("");
+    } else {
+      el.reviewBox.hidden = true;
+      el.reviewList.innerHTML = "";
+    }
+
+    showScreen("results");
+  }
+
+  function quitToHome() {
+    stopTimer();
+    refreshHome();
+    showScreen("home");
+  }
+
+  function resetProgress() {
+    if (!confirm("Reset all HOSA quiz progress for Saanjh on this device?")) return;
+    progress = defaultProgress();
+    saveProgress();
+    refreshHome();
+  }
+
+  function bindTap(id, fn) {
+    const node = document.getElementById(id);
+    if (!node) return;
+    let last = 0;
+    function run(e) {
+      const now = Date.now();
+      if (now - last < 400) return;
+      last = now;
+      fn(e);
+    }
+    node.addEventListener("click", run);
+    node.addEventListener("touchend", run, { passive: true });
+  }
+  window.startHosaSession = startSession;
+  bindTap("btn-practice", function () { startSession("practice"); });
+  bindTap("btn-focus", function () { startSession("focus"); });
+  bindTap("btn-challenge", function () { startSession("challenge"); });
+  document.getElementById("btn-reset").addEventListener("click", resetProgress);
+  document.getElementById("btn-quit").addEventListener("click", quitToHome);
+  document.getElementById("btn-home-mid").addEventListener("click", quitToHome);
+  document.getElementById("btn-next").addEventListener("click", nextOrFinish);
+  document.getElementById("btn-again").addEventListener("click", function () { startSession(state.lastMode || "practice"); });
+  document.getElementById("btn-results-home").addEventListener("click", quitToHome);
+
+  refreshHome();
+  showScreen("home");
+})();
+
+  </script>
+</body>
+</html>
